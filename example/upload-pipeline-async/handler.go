@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	faasflow "github.com/s8sg/faasflow"
+	minioStateManager "github.com/s8sg/faasflowMinioStateManager"
 	"io"
 	"log"
 	"mime/multipart"
@@ -101,13 +102,22 @@ func validateFace(data []byte) error {
 // Defines a chain
 func Define(flow *faasflow.Workflow, context *faasflow.Context) (err error) {
 
+	miniosm, err := minioStateManager.GetMinioStateManager()
+	if err != nil {
+		return err
+	}
+	context.SetStateManager(miniosm)
+
 	// Define Chain
 	flow.
 		Modify(func(data []byte) ([]byte, error) {
 			// Set the name of the file (error if not specified)
 			filename := getQuery("file")
 			if filename != "" {
-				context.Set("fileName", filename)
+				err := context.Set("fileName", filename)
+				if err != nil {
+					return nil, err
+				}
 			} else {
 				return nil, fmt.Errorf("Provide file name with `--query file=<name>`")
 			}

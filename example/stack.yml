@@ -15,6 +15,7 @@ functions:
     environment_file:
       - upload-pipeline.yml
 
+
   upload-pipeline-async:
     lang: faasflow
     handler: ./upload-pipeline-async
@@ -24,8 +25,15 @@ functions:
       write_timeout: 120
       write_debug: true
       combine_output: false
+      s3_url: "minio:9000"
+      s3_bucket: "faasflow"
+      s3_tls: false
+      secret_mount_path: "/var/run/secrets/"
     environment_file:
       - upload-pipeline-async.yml
+    secrets:
+      - s3-secret-key
+      - s3-access-key 
 
   colorization:
     lang: dockerfile
